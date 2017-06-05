@@ -20,16 +20,16 @@ namespace AllodsCalc
 		{
 			AClass[] classes =
 			{
-				new AClass("Храмовник", false, 0.54),
-				new AClass("Мистик", false, 0.75),
-				new AClass("Язычник", true, 0.7),
-				new AClass("Бард", true, 1.0),
-				new AClass("Волшебник", false, 0.65),
-				new AClass("Инженер", false, 0.6),
-				new AClass("Некромант", false, 0.5),
-				new AClass("Жрец", false, 0.55),
-				new AClass("Воин", true, 1.0),
-				new AClass("Разведчик", false, 0.5)
+				new AClass("Храмовник", false),
+				new AClass("Мистик", false),
+				new AClass("Язычник", true),
+				new AClass("Бард", true),
+				new AClass("Волшебник", false),
+				new AClass("Инженер", false),
+				new AClass("Некромант", false),
+				new AClass("Жрец", false),
+				new AClass("Воин", true),
+				new AClass("Разведчик", false)
 			};
 
 			view.comboBox.Items.AddRange(classes);
@@ -55,9 +55,11 @@ namespace AllodsCalc
 					: "(Без учета основной специальной характеристики)";
 		}
 
-		private void RefreshDataFromClassAndSumm(AClass aClass, int summ)
+		private void RefreshDataFromClassAndSumm(AClass aClass, int summ, int VU, int doubleR, bool hasSKUcheckBox)
 		{
 			if (aClass == null) return;
+
+			bool hasSKU = aClass.hasSKU && hasSKUcheckBox;
 
 			int maxR = 0;
 			int maxM = 0;
@@ -68,13 +70,13 @@ namespace AllodsCalc
 
 			for (int M = 0; M <= summ / 2; M++)
 			{
-				for (int SKU = 0; ((aClass.hasSKU) && (SKU <= summ - M * 2) && (SKU <= 500)) || (SKU < 1); SKU++)
+				for (int SKU = 0; ((hasSKU) && (SKU <= summ - M * 2) && (SKU <= 500)) || (SKU < 1); SKU++)
 				{
 					for (int BU = 0; (BU < summ - M * 2 - SKU) && (BU < 181); BU++)
 					{
 						int R = summ - M * 2 - BU - SKU;
-						D = (1.0 + M * 0.001) * (1.0 + M * 0.001) * (1.0 + R * 0.0015 * 0.95) *
-						    (1.0 + BU * 0.0018 * aClass.partDamage) * (1.0 + SKU * 0.001333);
+						D = (1.0D + M * 0.001D) * (1.0D + M * 0.001D) * (1.0D + R * 1.5E-5D * doubleR) 
+							* (1.0D + BU * 1.8E-5D * VU) * (1.0D + SKU * 0.001333D);
 						if (D > maxD)
 						{
 							maxD = D;
@@ -92,7 +94,7 @@ namespace AllodsCalc
 			sb.AppendLine();
 			sb.AppendLine($"Коэфф. дамага при последнем расчете = {D:N3}");
 			sb.AppendLine();
-			if (aClass.hasSKU)
+			if (hasSKU)
 			{
 				sb.AppendLine($"Сила крит урона = {maxSKU}");
 				sb.AppendLine();
@@ -114,8 +116,11 @@ namespace AllodsCalc
 		{
 			AClass selectedAClass = (AClass) view.comboBox.SelectedItem;
 			int sum = Convert.ToInt32(view.numericUpDown.Value);
+			int VU = Convert.ToInt32(view.numericUpDownVU.Value);
+			int doubleR = Convert.ToInt32(view.numericUpDownDoubleR.Value);
+			bool hasSKUCheckBox = view.checkBoxSKU.Checked;
 
-			RefreshDataFromClassAndSumm(selectedAClass, sum);
+			RefreshDataFromClassAndSumm(selectedAClass, sum, VU, doubleR, hasSKUCheckBox);
 		}
 	}
 }
